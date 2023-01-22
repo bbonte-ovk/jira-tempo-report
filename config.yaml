@@ -1,0 +1,42 @@
+certificate: "path/to/jira/certificate"
+certificatePaswword: ""
+tempoApiToken: ""
+jiraAuth:
+  user: ""
+  password: ""
+urlJiraOvk: "https://jira-external.overkiz.com"
+
+squad:
+  name: "FT5"
+  members:
+    - member:
+        id: b.bonte-external
+        hoursPerDay: 8
+    - member:
+        id: l.boudereaux
+        hoursPerDay: 8
+    - member:
+        id: "M.Carter"
+        hoursPerDay: 8
+    - member:
+        id: "j.bugnard"
+        hoursPerDay: 8
+    - member:
+        id: "v.henriet"
+        hoursPerDay: 8
+    - member:
+        id: "r.descours"
+        hoursPerDay: 8
+    - member:
+        id: "A.Marichal"
+        hoursPerDay: 7
+
+period:
+  sprint_2023_1_1:
+    start: "2023-01-02"
+    end: "2023-01-09"
+    nbDays: 6
+  sprint_2023_1_2:
+    start: "2023-01-10"
+    end: "2023-01-23"
+    nbDays: 10
