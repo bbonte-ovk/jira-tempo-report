@@ -240,10 +240,10 @@ function printReport(report) {
   console.log("======================")
 
   console.log(`-- CP/RTT: ${report.cp_rtt}h`)
-  console.log(`-- Grooming: ${report.grooming}h (${((report.grooming / report.worked) * 100).toFixed(2)}%)`)
-  console.log(`-- TMA: ${report.tma}h (${((report.tma / report.worked) * 100).toFixed(2)}%)`)
-  console.log(`-- Dev: ${report.dev}h (${((report.dev / report.worked) * 100).toFixed(2)}%)`)
-  console.log(`-- AR: ${report.ar}h (${((report.ar / report.worked) * 100).toFixed(2)}%)`)
+  console.log(`-- Grooming: ${report.grooming}h = ${report.grooming/8}j/h (${((report.grooming / report.worked) * 100).toFixed(2)}%)`)
+  console.log(`-- TMA: ${report.tma}h = ${report.tma/8}j/h (${((report.tma / report.worked) * 100).toFixed(2)}%)`)
+  console.log(`-- Dev: ${report.dev}h = ${report.dev/8}j/h (${((report.dev / report.worked) * 100).toFixed(2)}%)`)
+  console.log(`-- AR: ${report.ar}h = ${report.ar/8}j/h (${((report.ar / report.worked) * 100).toFixed(2)}%)`)
 
   let notInSquad = report.notInSquad.da + report.notInSquad.cse + report.notInSquad.other.hours
   console.log(`-- not in squad: ${notInSquad}h (${((notInSquad / report.worked) * 100).toFixed(2)}%)\n`)
