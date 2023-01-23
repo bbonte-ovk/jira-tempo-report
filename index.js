@@ -237,6 +237,7 @@ function printReport(report) {
   console.log("======================")
   console.log(`Worklog report`)
   console.log(`Completed at ${completed}%, ${report.logged}h (missing ${missingHours}h)`)
+  console.log(`Worked: ${report.worked}h = ${report.worked/8}j/h`)
   console.log("======================")
 
   console.log(`-- CP/RTT: ${report.cp_rtt}h`)
