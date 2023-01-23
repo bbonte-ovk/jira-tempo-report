@@ -74,12 +74,13 @@ async function translateWorklogs(worklogs, user) {
     grooming: 0,
     tma: 0,
     dev: 0,
+    cp_rtt: 0,
+    worked: 0,
     notInSquad: {
       cop: 0,
       cse: 0,
       da: 0,
       ar: 0,
-      cp_rtt: 0,
       other: {
         hours: 0,
         arrayOfIssues: []
@@ -91,7 +92,7 @@ async function translateWorklogs(worklogs, user) {
     details.logged += worklog.hours
 
     if (is_cpp_rtt(worklog)) {
-      details.notInSquad.cp_rtt += worklog.hours
+      details.cp_rtt += worklog.hours
     }
     else if (is_CSE(worklog)) {
       details.notInSquad.cse += worklog.hours
@@ -120,6 +121,7 @@ async function translateWorklogs(worklogs, user) {
       }
     }
   }
+  details.worked = details.logged - details.cp_rtt
 
   return details
 }
@@ -184,12 +186,13 @@ async function getSquadReport(squad, period) {
     grooming: 0,
     tma: 0,
     dev: 0,
+    cp_rtt: 0,
+    worked: 0,
     notInSquad: {
       cop: 0,
       cse: 0,
       da: 0,
       ar: 0,
-      cp_rtt: 0,
       other: {
         hours: 0,
         arrayOfIssues: []
@@ -202,6 +205,7 @@ async function getSquadReport(squad, period) {
     const report = await getUserReport(user.member, period)
 
     squadReport.logged += report.logged
+    squadReport.worked += report.worked
     squadReport.expectedLogged += report.expectedLogged
 
     squadReport.grooming += report.grooming
@@ -212,7 +216,7 @@ async function getSquadReport(squad, period) {
     squadReport.notInSquad.cse += report.notInSquad.cse
     squadReport.notInSquad.da += report.notInSquad.da
     squadReport.notInSquad.ar += report.notInSquad.ar
-    squadReport.notInSquad.cp_rtt += report.notInSquad.cp_rtt
+    squadReport.cp_rtt += report.cp_rtt
 
     squadReport.notInSquad.other.hours += report.notInSquad.other.hours
 
@@ -235,14 +239,14 @@ function printReport(report) {
   console.log(`Completed at ${completed}%, ${report.logged}h (missing ${missingHours}h)`)
   console.log("======================")
 
-  console.log(`-- Grooming: ${report.grooming}h (${((report.grooming / report.logged) * 100).toFixed(2)}%)`)
-  console.log(`-- TMA: ${report.tma}h (${((report.tma / report.logged) * 100).toFixed(2)}%)`)
-  console.log(`-- Dev: ${report.dev}h (${((report.dev / report.logged) * 100).toFixed(2)}%)`)
+  console.log(`-- CP/RTT: ${report.cp_rtt}h`)
+  console.log(`-- Grooming: ${report.grooming}h (${((report.grooming / report.worked) * 100).toFixed(2)}%)`)
+  console.log(`-- TMA: ${report.tma}h (${((report.tma / report.worked) * 100).toFixed(2)}%)`)
+  console.log(`-- Dev: ${report.dev}h (${((report.dev / report.worked) * 100).toFixed(2)}%)`)
 
-  let notInSquad = report.notInSquad.cp_rtt + report.notInSquad.da + report.notInSquad.ar + report.notInSquad.cse + report.notInSquad.other.hours
-  console.log(`-- not in squad: ${notInSquad}h (${((notInSquad / report.logged) * 100).toFixed(2)}%)\n`)
+  let notInSquad = report.notInSquad.da + report.notInSquad.ar + report.notInSquad.cse + report.notInSquad.other.hours
+  console.log(`-- not in squad: ${notInSquad}h (${((notInSquad / report.worked) * 100).toFixed(2)}%)\n`)
 
-  console.log(`---- CP/RTT: ${report.notInSquad.cp_rtt}h`)
   console.log(`---- DA: ${report.notInSquad.da}h`)
   console.log(`---- AR: ${report.notInSquad.ar}h`)
   console.log(`---- CSE: ${report.notInSquad.cse}h`)
