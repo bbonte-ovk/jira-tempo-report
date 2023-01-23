@@ -75,12 +75,12 @@ async function translateWorklogs(worklogs, user) {
     tma: 0,
     dev: 0,
     cp_rtt: 0,
+    ar: 0,
     worked: 0,
     notInSquad: {
       cop: 0,
       cse: 0,
       da: 0,
-      ar: 0,
       other: {
         hours: 0,
         arrayOfIssues: []
@@ -101,7 +101,7 @@ async function translateWorklogs(worklogs, user) {
       details.notInSquad.da += worklog.hours
     }
     else if (is_AR(worklog)) {
-      details.notInSquad.ar += worklog.hours
+      details.ar += worklog.hours
     }
     else {
       if (await issueIsHisSquad(user.squadName, worklog.issue_key) == false) {
@@ -187,12 +187,12 @@ async function getSquadReport(squad, period) {
     tma: 0,
     dev: 0,
     cp_rtt: 0,
+    ar: 0,
     worked: 0,
     notInSquad: {
       cop: 0,
       cse: 0,
       da: 0,
-      ar: 0,
       other: {
         hours: 0,
         arrayOfIssues: []
@@ -215,7 +215,7 @@ async function getSquadReport(squad, period) {
     squadReport.notInSquad.cop += report.notInSquad.cop
     squadReport.notInSquad.cse += report.notInSquad.cse
     squadReport.notInSquad.da += report.notInSquad.da
-    squadReport.notInSquad.ar += report.notInSquad.ar
+    squadReport.ar += report.ar
     squadReport.cp_rtt += report.cp_rtt
 
     squadReport.notInSquad.other.hours += report.notInSquad.other.hours
@@ -241,15 +241,15 @@ function printReport(report) {
   console.log("======================")
 
   console.log(`-- CP/RTT: ${report.cp_rtt}h`)
-  console.log(`-- Grooming: ${report.grooming}h (${((report.grooming / report.worked) * 100).toFixed(2)}%)`)
-  console.log(`-- TMA: ${report.tma}h (${((report.tma / report.worked) * 100).toFixed(2)}%)`)
-  console.log(`-- Dev: ${report.dev}h (${((report.dev / report.worked) * 100).toFixed(2)}%)`)
+  console.log(`-- Grooming: ${report.grooming}h = ${report.grooming/8}j/h (${((report.grooming / report.worked) * 100).toFixed(2)}%)`)
+  console.log(`-- TMA: ${report.tma}h = ${report.tma/8}j/h (${((report.tma / report.worked) * 100).toFixed(2)}%)`)
+  console.log(`-- Dev: ${report.dev}h = ${report.dev/8}j/h (${((report.dev / report.worked) * 100).toFixed(2)}%)`)
+  console.log(`-- AR: ${report.ar}h = ${report.ar/8}j/h (${((report.ar / report.worked) * 100).toFixed(2)}%)`)
 
-  let notInSquad = report.notInSquad.da + report.notInSquad.ar + report.notInSquad.cse + report.notInSquad.other.hours
+  let notInSquad = report.notInSquad.da + report.notInSquad.cse + report.notInSquad.other.hours
   console.log(`-- not in squad: ${notInSquad}h (${((notInSquad / report.worked) * 100).toFixed(2)}%)\n`)
 
   console.log(`---- DA: ${report.notInSquad.da}h`)
-  console.log(`---- AR: ${report.notInSquad.ar}h`)
   console.log(`---- CSE: ${report.notInSquad.cse}h`)
   console.log(`---- CoP: ${report.notInSquad.cop}h`)
   console.log(`---- other: ${report.notInSquad.other.hours}h`)
