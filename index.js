@@ -34,7 +34,7 @@ async function getIssue(key) {
   exit
 
   const resp = await response.text();
-  console.log(response.status);
+  // console.log(response.status);
   return JSON.parse(resp)
 }
 
@@ -57,7 +57,7 @@ async function getWorklogs(userName, dateFrom, dateTo) {
   })
 
   const resp = await response.text();
-  console.log(response.status);
+  // console.log(response.status);
   let jsonObj = xmlParser.parse(resp);
 
   if (!Array.isArray(jsonObj.worklogs.worklog)) {
@@ -161,7 +161,7 @@ function is_grooming(issue) {
 }
 
 function is_tma(issue) {
-  return issue.issue_details.type_id == 10102
+  return issue.issue_details.type_id == 10102 || issue.issue_details.type_id == 11700
 }
 
 function is_SOT(issue) {
@@ -224,6 +224,7 @@ async function getSquadReport(squad, period) {
   for (const user of squad.members) {
     user.member.squadName = squad.name
     const report = await getUserReport(user.member, period)
+    printReport(report)
 
     squadReport.logged += report.logged
     squadReport.worked += report.worked
