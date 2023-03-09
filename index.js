@@ -34,7 +34,7 @@ async function getIssue(key) {
   exit
 
   const resp = await response.text();
-  console.log(response.status);
+  // console.log(response.status);
   return JSON.parse(resp)
 }
 
@@ -57,7 +57,7 @@ async function getWorklogs(userName, dateFrom, dateTo) {
   })
 
   const resp = await response.text();
-  console.log(response.status);
+  // console.log(response.status);
   let jsonObj = xmlParser.parse(resp);
 
   if (!Array.isArray(jsonObj.worklogs.worklog)) {
@@ -76,13 +76,16 @@ async function translateWorklogs(worklogs, user) {
     dev: 0,
     cp_rtt: 0,
     ar: 0,
+    sot: 0,
     worked: 0,
     notInSquad: {
-      cop: 0,
       cse: 0,
       da: 0,
       other: {
-        hours: 0,
+        grooming: 0,
+        tma: 0,
+        dev: 0,
+        totalHours: 0,
         arrayOfIssues: []
       }
     }
@@ -90,7 +93,6 @@ async function translateWorklogs(worklogs, user) {
 
   for (const worklog of worklogs) {
     details.logged += worklog.hours
-
     if (is_cpp_rtt(worklog)) {
       details.cp_rtt += worklog.hours
     }
@@ -103,10 +105,22 @@ async function translateWorklogs(worklogs, user) {
     else if (is_AR(worklog)) {
       details.ar += worklog.hours
     }
+    else if (is_SOT(worklog)) {
+      details.sot += worklog.hours
+    }
     else {
       if (await issueIsHisSquad(user.squadName, worklog.issue_key) == false) {
-        details.notInSquad.other.hours += worklog.hours
+        details.notInSquad.other.totalHours += worklog.hours
         let issue = worklog.issue_key + " " + worklog.issue_summary
+        if (is_grooming(worklog)) {
+          details.notInSquad.other.grooming += worklog.hours
+        }
+        else if (is_tma(worklog)) {
+          details.notInSquad.other.tma += worklog.hours
+        }
+        else {
+          details.notInSquad.other.dev += worklog.hours
+        }
         if (!details.notInSquad.other.arrayOfIssues.includes(issue))
           details.notInSquad.other.arrayOfIssues.push(issue)
       }
@@ -147,7 +161,11 @@ function is_grooming(issue) {
 }
 
 function is_tma(issue) {
-  return issue.issue_details.type_id == 10102
+  return issue.issue_details.type_id == 10102 || issue.issue_details.type_id == 11700
+}
+
+function is_SOT(issue) {
+  return issue.billing_key == "OVERKIZ-SOT" || issue.billing_key == "TT" || issue.issue_key == "TEMPO-9"
 }
 
 function isInHisSquad(squadName, issue) {
@@ -188,13 +206,16 @@ async function getSquadReport(squad, period) {
     dev: 0,
     cp_rtt: 0,
     ar: 0,
+    sot: 0,
     worked: 0,
     notInSquad: {
-      cop: 0,
       cse: 0,
       da: 0,
       other: {
-        hours: 0,
+        grooming: 0,
+        tma: 0,
+        dev: 0,
+        totalHours: 0,
         arrayOfIssues: []
       }
     }
@@ -203,22 +224,26 @@ async function getSquadReport(squad, period) {
   for (const user of squad.members) {
     user.member.squadName = squad.name
     const report = await getUserReport(user.member, period)
+    printReport(report)
 
     squadReport.logged += report.logged
     squadReport.worked += report.worked
     squadReport.expectedLogged += report.expectedLogged
 
-    squadReport.grooming += report.grooming
-    squadReport.tma += report.tma
-    squadReport.dev += report.dev
+    squadReport.grooming += report.grooming + report.notInSquad.other.grooming
+    squadReport.tma += report.tma + report.notInSquad.other.tma
+    squadReport.dev += report.dev + report.notInSquad.other.dev
 
-    squadReport.notInSquad.cop += report.notInSquad.cop
     squadReport.notInSquad.cse += report.notInSquad.cse
     squadReport.notInSquad.da += report.notInSquad.da
     squadReport.ar += report.ar
+    squadReport.sot += report.sot
     squadReport.cp_rtt += report.cp_rtt
 
-    squadReport.notInSquad.other.hours += report.notInSquad.other.hours
+    squadReport.notInSquad.other.totalHours += report.notInSquad.other.totalHours
+    squadReport.notInSquad.other.grooming += report.notInSquad.other.grooming
+    squadReport.notInSquad.other.tma += report.notInSquad.other.tma
+    squadReport.notInSquad.other.dev += report.notInSquad.other.dev
 
     if (report.notInSquad.other.arrayOfIssues.length) {
       for (const issue of report.notInSquad.other.arrayOfIssues) {
@@ -238,26 +263,28 @@ function printReport(report) {
   console.log(`Worklog report`)
   console.log(`Completed at ${completed}%, ${report.logged}h (missing ${missingHours}h)`)
   console.log(`Worked: ${report.worked}h = ${report.worked/8}j/h`)
+  console.log(`CP/RTT: ${report.cp_rtt}h`)
   console.log("======================")
-
-  console.log(`-- CP/RTT: ${report.cp_rtt}h`)
   console.log(`-- Grooming: ${report.grooming}h = ${report.grooming/8}j/h (${((report.grooming / report.worked) * 100).toFixed(2)}%)`)
   console.log(`-- TMA: ${report.tma}h = ${report.tma/8}j/h (${((report.tma / report.worked) * 100).toFixed(2)}%)`)
   console.log(`-- Dev: ${report.dev}h = ${report.dev/8}j/h (${((report.dev / report.worked) * 100).toFixed(2)}%)`)
   console.log(`-- AR: ${report.ar}h = ${report.ar/8}j/h (${((report.ar / report.worked) * 100).toFixed(2)}%)`)
+  console.log(`-- SOT: ${report.sot}h = ${report.sot/8}j/h (${((report.sot / report.worked) * 100).toFixed(2)}%)\n`)
 
-  let notInSquad = report.notInSquad.da + report.notInSquad.cse + report.notInSquad.other.hours
-  console.log(`-- not in squad: ${notInSquad}h (${((notInSquad / report.worked) * 100).toFixed(2)}%)\n`)
-
+  console.log(`Including:`)
+  let notInSquad = report.notInSquad.da + report.notInSquad.cse + report.notInSquad.other.totalHours
+  console.log(`-- not in squad: ${notInSquad}h (${((notInSquad / report.worked) * 100).toFixed(2)}%)`)
   console.log(`---- DA: ${report.notInSquad.da}h`)
   console.log(`---- CSE: ${report.notInSquad.cse}h`)
-  console.log(`---- CoP: ${report.notInSquad.cop}h`)
-  console.log(`---- other: ${report.notInSquad.other.hours}h`)
+  console.log(`---- other: ${report.notInSquad.other.totalHours}h`)
+  console.log(`------ Grooming: ${report.notInSquad.other.grooming}h`)
+  console.log(`------ TMA: ${report.notInSquad.other.tma}h`)
+  console.log(`------ Dev: ${report.notInSquad.other.dev}h`)
   console.log(report.notInSquad.other.arrayOfIssues)
 }
 
 async function main() {
-  const report = await getSquadReport(config.squad, config.period.sprint_2023_1_1)
+  const report = await getSquadReport(config.squad, config.period.sprint_2023_2_1)
   printReport(report)
 }
 

@@ -40,3 +40,15 @@ period:
     start: "2023-01-10"
     end: "2023-01-23"
     nbDays: 10
+  sprint_2023_1_3:
+    start: "2023-01-24"
+    end: "2023-02-06"
+    nbDays: 10
+  sprint_2023_1_4:
+    start: "2023-02-07"
+    end: "2023-02-20"
+    nbDays: 10
+  sprint_2023_2_1:
+    start: "2023-02-21"
+    end: "2023-03-06"
+    nbDays: 10
