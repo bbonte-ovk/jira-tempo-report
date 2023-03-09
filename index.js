@@ -165,7 +165,7 @@ function is_tma(issue) {
 }
 
 function is_SOT(issue) {
-  return issue.billing_key == "OVERKIZ-SOT"
+  return issue.billing_key == "OVERKIZ-SOT" || issue.billing_key == "TT" || issue.issue_key == "TEMPO-9"
 }
 
 function isInHisSquad(squadName, issue) {
@@ -284,7 +284,7 @@ function printReport(report) {
 }
 
 async function main() {
-  const report = await getSquadReport(config.squad, config.period.sprint_2023_1_4)
+  const report = await getSquadReport(config.squad, config.period.sprint_2023_2_1)
   printReport(report)
 }
 
